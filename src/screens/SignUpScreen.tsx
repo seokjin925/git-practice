@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {Alert, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import axios from 'axios';
 import config from '../config/config';
@@ -10,13 +10,23 @@ import config from '../config/config';
  * @author 권민지
  */
 const SignUpScreen: React.FC = () => {
+    // 상태 변수 생성
     const [id, setId] = useState<String>('');
     const [password, setPassword] = useState<String>('');
+    const [passwordCheck, setPasswordCheck] = useState<String>('');
     const [name, setName] = useState<String>('');
     const [phone, setPhone] = useState<String>('');
+    const [isTouched, setIsTouched] = useState<boolean>(false);
+
+    // ref 객체 생성
+    const idRef = useRef<TextInput>(null);
+    const passwordRef = useRef<TextInput>(null);
+    const passwordCheckRef = useRef<TextInput>(null);
+    const nameRef = useRef<TextInput>(null);
+    const phoneRef = useRef<TextInput>(null);
 
     /**
-     * Axios 인스턴스 생성
+     * Axios 인스턴스 생성 함수
      */
     const createInstanceWithAuth = () => {
         const baseURL = config.baseURL;
@@ -33,9 +43,39 @@ const SignUpScreen: React.FC = () => {
      */
     const handleSignUp = async (): Promise<void> => {
         console.log('===== 회원가입 요청 =====');
+        setIsTouched(true);
 
+        // 입력 필드 유효성 검증
+        if (!id.trim() || !password.trim() || !name.trim() || !phone.trim()) {
+            Alert.alert('입력폼 빈칸 존재', '모든 입력폼을 채워주세요.');
+
+            // 빈 필드에 포커스
+            if (!id.trim()) {
+                idRef.current?.focus();
+            } else if (!password.trim()) {
+                passwordRef.current?.focus();
+            } else if (!passwordCheck.trim()) {
+                passwordCheckRef.current?.focus();
+            } else if (!name.trim()) {
+                nameRef.current?.focus();
+            } else if (!phone.trim()) {
+                phoneRef.current?.focus();
+            }
+            return;
+        }
+
+        // 비밀번호 폼과 비밀번호 확인 폼 일치 여부 확인
+        if (password !== passwordCheck) {
+            Alert.alert('비밀번호 불일치', '비밀번호와 비밀번호 확인이 일치하지 않습니다.');
+            setPasswordCheck('');
+            passwordCheckRef.current?.focus();
+            return;
+        }
+
+        // axios 인스턴스 생성
         const axiosInstance = createInstanceWithAuth();
 
+        // 회원가입 요청
         try {
             const response = await axiosInstance.post('/auth/signup',
                 {
@@ -64,26 +104,47 @@ const SignUpScreen: React.FC = () => {
         // 전화번호 인증 로직
     };
 
+    // 입력 필드 테두리 색상 상태
+    const getBorderColorClass = (value: string) =>  {
+        if (isTouched) {
+            return value ? 'border-blue-300' : 'border-red-600';
+        }
+
+        // 초기 상태는 회색 테두리
+        return 'border-gray-300';
+    };
+
     return (
         <View className="flex-1 justify-center bg-white px-4">
             <View className="mb-40">
                 <Text className="text-3xl font-bold mb-6 text-center text-blue-600">회원가입</Text>
                 <TextInput
-                    className="border border-gray-300 rounded-lg p-3 mb-4"
+                    ref={idRef}
+                    className={`border ${getBorderColorClass(id as string)} rounded-lg p-3 mb-4`}
                     placeholder="아이디"
                     value={id as string}
                     onChangeText={setId}
                     autoCapitalize="none"
                 />
                 <TextInput
-                    className="border border-gray-300 rounded-lg p-3 mb-4"
+                    ref={passwordRef}
+                    className={`border ${getBorderColorClass(password as string)} rounded-lg p-3 mb-4`}
                     placeholder="비밀번호"
                     value={password as string}
                     onChangeText={setPassword}
                     secureTextEntry
                 />
                 <TextInput
-                    className="border border-gray-300 rounded-lg p-3 mb-4"
+                    ref={passwordCheckRef}
+                    className={`border ${getBorderColorClass(password as string)} rounded-lg p-3 mb-4`}
+                    placeholder="비밀번호 확인"
+                    value={passwordCheck as string}
+                    onChangeText={setPasswordCheck}
+                    secureTextEntry
+                />
+                <TextInput
+                    ref = {nameRef}
+                    className={`border ${getBorderColorClass(name as string)} rounded-lg p-3 mb-4`}
                     placeholder="이름"
                     value={name as string}
                     onChangeText={setName}
@@ -91,7 +152,8 @@ const SignUpScreen: React.FC = () => {
                 />
                 <View className="flex-row justify-between mb-6 w-full">
                     <TextInput
-                        className="border border-gray-300 rounded-lg p-3 w-3/4"
+                        ref = {phoneRef}
+                        className={`border ${getBorderColorClass(phone as string)} rounded-lg p-3 w-3/4`}
                         placeholder="전화번호"
                         value={phone as string}
                         onChangeText={setPhone}
