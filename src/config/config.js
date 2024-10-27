@@ -1,6 +1,5 @@
 const config = {
-    baseURL: 'http://10.10.3.213:8080/api',
-    // baseURL: 'http://localhost:8080/api',
+    baseURL: process.env.REACT_APP_BASE_URL || 'http://localhost:8080/api/auth',
 };
 
 export default config;
