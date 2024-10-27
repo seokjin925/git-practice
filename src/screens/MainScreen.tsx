@@ -1,14 +1,18 @@
 import React from 'react';
 import { Text, TextInput, TouchableOpacity, View, ScrollView, SafeAreaView, StatusBar, Dimensions } from 'react-native';
-
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { MainStackParamList } from '../navigation/MainNavigator'; // MainStackParamList 타입 임포트
 const screenWidth = Dimensions.get('window').width;
 
 /**
  * 메인 화면
- * since 2024/10/26
- * latest
+ * @since 2024.10.27
+ * @latest 2024.10.27
+ * @author 김진수
  */
 const MainScreen: React.FC = () => {
+    // useNavigation에 타입을 적용하여 네비게이션 오류 방지
+    const navigation = useNavigation<NavigationProp<MainStackParamList>>();
 
     return (
         <SafeAreaView className="flex-1 bg-gray-100">
@@ -32,14 +36,19 @@ const MainScreen: React.FC = () => {
                 {/* 카테고리 아이콘 섹션 */}
                 <View className="flex-wrap flex-row justify-between mt-8">
                     {['지도', '숙소', '음식점', '카페', '캠핑', '미용실', '병원', '반려용품'].map((category) => (
-                        <View
+                        <TouchableOpacity
                             key={category}
+                            onPress={() => {
+                                if (category === '지도') {
+                                    navigation.navigate('Map'); // "지도" 버튼 클릭 시 MapScreen으로 이동
+                                }
+                            }}
                             className="w-1/4 p-2"
                         >
                             <View className="bg-gray-200 rounded-lg h-20 justify-center items-center">
                                 <Text className="text-center text-gray-600">{category}</Text>
                             </View>
-                        </View>
+                        </TouchableOpacity>
                     ))}
                 </View>
 
