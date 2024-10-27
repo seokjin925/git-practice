@@ -3,6 +3,9 @@ import { View, Text, TextInput, TouchableOpacity } from "react-native";
 
 /**
  * 로그인 화면
+ * @since 2024.10.26
+ * @latest 2024.10.27
+ * @author 권민지
  */
 const LoginScreen: React.FC = () => {
     const [id, setId] = useState<String>('');

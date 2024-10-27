@@ -1,8 +1,13 @@
 import React, {useState} from 'react';
-import {Text, TextInput, TouchableOpacity, View} from "react-native";
+import {Alert, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import axios from 'axios';
+import config from '../config/config';
 
 /**
  * 회원가입 화면
+ * @since 2024.10.26
+ * @latest 2024.10.27
+ * @author 권민지
  */
 const SignUpScreen: React.FC = () => {
     const [id, setId] = useState<String>('');
@@ -11,14 +16,45 @@ const SignUpScreen: React.FC = () => {
     const [phone, setPhone] = useState<String>('');
 
     /**
+     * Axios 인스턴스 생성
+     */
+    const createInstanceWithAuth = () => {
+        const baseURL = config.baseURL;
+
+            return axios.create({
+                baseURL: baseURL,
+                responseType: 'json',
+                withCredentials: true,
+            });
+        };
+
+    /**
      * 회원가입 버튼 클릭 이벤트
      */
-    const handleSingUp = (): void => {
-        console.log('===== 회원가입 시도 =====');
-        console.log('id:', id);
-        console.log('password:', password);
-        console.log('name:', name);
-        console.log('phone:', phone);
+    const handleSignUp = async (): Promise<void> => {
+        console.log('===== 회원가입 요청 =====');
+
+        const axiosInstance = createInstanceWithAuth();
+
+        try {
+            const response = await axiosInstance.post('/auth/signup',
+                {
+                loginId: id,
+                password: password,
+                name: name,
+                phoneNumber: phone
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('회원가입 성공: ', response.data);
+            Alert.alert('회원가입 성공', '회원가입이 완료되었습니다.');
+        } catch (error) {
+            console.error('회원가입 실패: ', error);
+            Alert.alert('회원가입 실패', '회원가입에 실패하였습니다.');
+        }
     };
 
     /**
@@ -71,7 +107,7 @@ const SignUpScreen: React.FC = () => {
                 </View>
 
                 <TouchableOpacity
-                    onPress={handleSingUp}
+                    onPress={handleSignUp}
                     className="bg-blue-700 py-3 px-6 rounded-lg shadow-lg hover:bg-blue-800"
                 >
                     <Text className="text-white text-lg font-semibold text-center">회원가입</Text>
